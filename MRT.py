@@ -41,7 +41,6 @@ class MRT(tk.Tk):
         self.title("Modified Rhyme Test") # Set app title
 #        self.geometry("400x800") # Set frame size
         self.attributes('-fullscreen',True)
-        self.resizable(0,0) # Fix frame size (not resizable)
         # Don't allow widgets to determine frames's width/height
         self.pack_propagate(0) 
         
