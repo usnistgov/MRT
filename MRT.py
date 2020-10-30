@@ -1020,7 +1020,11 @@ class MRTPage(tk.Frame):
         
     def start_trial(self):
         """Initialize a new MRT trial"""
-        clip_path = os.path.join(self.controller.clipLocation,self.ssPL[self.trial_number]["File"])
+        
+        raw_file_name = self.ssPL[self.trial_number]["File"]
+        file_name = self.check_path(raw_file_name)
+        
+        clip_path = os.path.join(self.controller.clipLocation,file_name)
         # Read wav file
         fs,clip = scipy.io.wavfile.read(clip_path)
         # Play clip, record play time
@@ -1028,6 +1032,22 @@ class MRTPage(tk.Frame):
         
         # Save time start for voting timing later
         self.vote_start = time.time()
+    
+    def check_path(self,fname):
+        """Check that the session file has appropriate path separator"""
+        if os.sep == "\\":
+            ops = "w"
+        else:
+            ops = "l"
+        
+        if os.sep not in fname:
+            if(ops == "w"):
+                fixed_name = fname.replace("/",os.sep)
+            else:
+                fixed_name = fname.replace("\\",os.sep)
+        else:
+            fixed_name = fname
+        return(fixed_name)
         
     def play_clip(self,raw_clip,fs,pad=0.2):
         """Play audio clip, hold until done playing"""
