@@ -62,14 +62,11 @@ class MRT(tk.Tk):
         # Initialize subject and session numbers as None
         self.subject_number = None
         self.session_number = None
+        
         # Query default output audio device
         _,self.audio_device = sd.default.device
-        # Store audio device list
-#        self.device_list = sd.query_devices()
-        self.hostapi_list = sd.query_hostapis()
-        self.device_list,self.device_list_ix = self.get_output_audio_devices()
-        
-        self.all_d_out = sd.query_devices()
+        # Store audio device list        
+        self.hostapi_list,self.device_list,self.device_list_ix = self.get_audio_device_lists()
         
         #file name for config
         self.config_file_name='config.ini'
@@ -126,7 +123,11 @@ class MRT(tk.Tk):
         device_name = self.device_list[d_ix]["name"] + self.hostapi_list[self.device_list[d_ix]["hostapi"]]["name"]
         return(device_name)
         
-        
+    def get_audio_device_lists(self):
+        """Wrapper function to update hostapi and output audio devices at once"""
+        hostapi_list = sd.query_hostapis()
+        device_list,device_list_ix = self.get_output_audio_devices()
+        return((hostapi_list,device_list,device_list_ix))
         
 class StartPage(tk.Frame):
     """Initialization page for MRT GUI
@@ -147,6 +148,7 @@ class StartPage(tk.Frame):
     subject_y = valid_dir_y + 120 # 410
     session_y = subject_y+40 # 450
     audio_y = session_y + 40 # 490
+    rai_y = audio_y + 60
     next_y = 700
     
     
@@ -209,6 +211,13 @@ class StartPage(tk.Frame):
         self.make_subject_select()
         self.make_session_select()
         self.make_audio_device_select()
+        
+        # Make refresh audio interface button
+        self.make_refresh_button()
+        
+        # Make Practice Button
+        # TODO: Implement this method
+        # self.make_practice()
         
         # Make button to continue to MRT
         self.make_next_button()
@@ -570,27 +579,57 @@ class StartPage(tk.Frame):
         self.audio_text.place(x=50+self.controller.x_offset, y = self.audio_y)
         
         self.audio_select = tk.OptionMenu(self,self.audio_device, "")
-        self.audio_select.place(x=50+self.controller.x_offset,y=self.audio_y+20)
+        self.audio_select.place(x=50+self.controller.x_offset,y=self.audio_y+20)    
+        
+        self.update_audio_device_select()
+        
+    def update_audio_device_select(self):
         menu = self.audio_select["menu"]
+        
         for ix,device in enumerate(self.controller.device_list):
             menu.add_command(label = device["name"]+ " " + self.controller.hostapi_list[device["hostapi"]]["name"],
                              command = lambda value = ix: self.audio_device_ix.set(value))
     
-    
-    
     def update_audio_device(self, *args):
         """Update audio device based off menu selection"""
         # Update controller audio device
-#        print(f"self.audio_device_ix.get(): {self.audio_device_ix.get()}")
-#        print(f"self.controller.device_list_ix: {self.controller.device_list_ix}")
-#        print(f"self.controller.all_d_out: \n{self.controller.all_d_out}")
         self.controller.audio_device = self.controller.device_list_ix[self.audio_device_ix.get()]
-#        print(f"self.controller.audio_device: {self.controller.audio_device}")
-#        self.controller.audio_device = self.audio_device_ix.get()
+        
+        # Get current audio device name
         audio_device = self.controller.device_list[self.audio_device_ix.get()]
         self.audio_device.set(audio_device["name"] + " " + self.controller.hostapi_list[audio_device["hostapi"]]["name"])
+
         # Update sound device (first input is input, second is output)
         sd.default.device = None,self.controller.audio_device
+    # %% Refresh Audio Devices
+    
+    def make_refresh_button(self):
+        """Initialize widget for refreshing audio devices"""
+        self.refresh_ai = tk.Button(self)
+        self.refresh_ai["text"] = "Refresh"
+        self.refresh_ai["font"] = self.button_font_size
+        self.refresh_ai["command"] = self.refresh_audio_devices
+        self.refresh_ai.place(x=130+self.controller.x_offset,y=self.rai_y,width=100)
+    
+    def refresh_audio_devices(self):
+        """Refresh available audio devices"""
+        menu = self.audio_select["menu"]
+        # Remove old menu items
+        for ix,device in enumerate(self.controller.device_list):
+            menu.delete(device["name"]+ " " + self.controller.hostapi_list[device["hostapi"]]["name"])
+        
+        # Restart sounddevice
+        sd._terminate()
+        sd._initialize()
+        
+        # Requery audio devices
+        self.controller.hostapi_list,self.controller.device_list,self.controller.device_list_ix = self.controller.get_audio_device_lists()
+        # pdb.set_trace()
+        self.update_audio_device_select()
+        
+        # Update variable tracking selected audio device
+        self.audio_device.set(self.controller.get_audio_device_name())
+        
     # %% Move to test when done
     def make_next_button(self):
         """Initialize widget for button to continue to MRTPage"""
