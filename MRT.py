@@ -149,6 +149,7 @@ class StartPage(tk.Frame):
     session_y = subject_y+40 # 450
     audio_y = session_y + 40 # 490
     rai_y = audio_y + 60
+    audio_check_y = rai_y + 60
     next_y = 700
     
     
@@ -190,6 +191,9 @@ class StartPage(tk.Frame):
         self.audio_device.set(self.controller.get_audio_device_name())
         # Set device list
         self.device_list = self.controller.device_list
+        
+        self.test_play_fs,self.test_play = scipy.io.wavfile.read("audio_check.wav")
+        self.make_audio_check()
         
         # Initialize int variable to store subject number
         self.subject_number = tk.IntVar(self)
@@ -629,7 +633,20 @@ class StartPage(tk.Frame):
         
         # Update variable tracking selected audio device
         self.audio_device.set(self.controller.get_audio_device_name())
-        
+    
+    #%% Practice Button
+    def make_audio_check(self):
+        """Initialize button for testing current audio settings"""
+        self.audio_check = tk.Button(self)
+        self.audio_check["text"] = "Check Audio"
+        self.audio_check["font"] = self.button_font_size
+        self.audio_check["command"] = self.check_audio
+        self.audio_check.place(x=50+self.controller.x_offset,
+                               y=self.audio_check_y,
+                               width=300)
+    def check_audio(self):
+        """Play example audio that is normalized to a volume of -26 dB"""
+        sd.play(self.test_play,self.test_play_fs)
     # %% Move to test when done
     def make_next_button(self):
         """Initialize widget for button to continue to MRTPage"""
