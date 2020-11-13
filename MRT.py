@@ -618,7 +618,7 @@ class StartPage(tk.Frame):
     def make_refresh_button(self):
         """Initialize widget for refreshing audio devices"""
         self.refresh_ai = tk.Button(self)
-        self.refresh_ai["text"] = "Refresh"
+        self.refresh_ai["text"] = "Refresh audio device list"
         self.refresh_ai["font"] = self.button_font_size
         self.refresh_ai["command"] = self.refresh_audio_devices
         self.refresh_ai.place(x=50+self.controller.x_offset,y=self.rai_y,width=300)
