@@ -20,6 +20,8 @@ import time
 from datetime import datetime
 import configparser
 import traceback
+import subprocess
+import argparse
 import pdb
 # Project Tags:
     # TODO: Feature to implement if time allows
@@ -31,8 +33,11 @@ class MRT(tk.Tk):
     mrt = MRT() creates a new instance of a tkinter GUI for performing modified rhyme
     tests. mrt.mainloop() runs the GUI.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, quit_command=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        
+        self.quit_command = quit_command
+        
         # Define title font
         self.title_font = tkfont.Font(family="Helvetica", size = 20, weight= "bold")
         # Define button font
@@ -149,8 +154,9 @@ class StartPage(tk.Frame):
     session_y = subject_y+40 # 450
     audio_y = session_y + 40 # 490
     rai_y = audio_y + 60
-    audio_check_y = rai_y + 60
+    audio_check_y = rai_y + 50
     next_y = 700
+    quit_y = next_y + 60
     
     
     
@@ -225,6 +231,8 @@ class StartPage(tk.Frame):
         
         # Make button to continue to MRT
         self.make_next_button()
+        
+        self.make_quit_button()
         
         # Check test directory status
         self.check_test_dir_status()
@@ -613,7 +621,7 @@ class StartPage(tk.Frame):
         self.refresh_ai["text"] = "Refresh"
         self.refresh_ai["font"] = self.button_font_size
         self.refresh_ai["command"] = self.refresh_audio_devices
-        self.refresh_ai.place(x=130+self.controller.x_offset,y=self.rai_y,width=100)
+        self.refresh_ai.place(x=50+self.controller.x_offset,y=self.rai_y,width=300)
     
     def refresh_audio_devices(self):
         """Refresh available audio devices"""
@@ -647,6 +655,28 @@ class StartPage(tk.Frame):
     def check_audio(self):
         """Play example audio that is normalized to a volume of -26 dB"""
         sd.play(self.test_play,self.test_play_fs)
+    
+    #%% Quit Button
+    def make_quit_button(self):
+        self.quit = tk.Button(self)
+        self.quit["text"] = "Quit"
+        self.quit["font"] = self.button_font_size
+        self.quit["command"] = self.quit_MRT
+        self.quit.place(x=50+self.controller.x_offset,
+                        y=self.quit_y,
+                        width=300)
+    
+    def quit_MRT(self):
+        # Get shutdown command
+        quit_command = self.controller.quit_command
+        # Destroy the application
+        self.controller.destroy()
+        if quit_command is not None:
+            exit_status = subprocess.run(quit_command)
+            if(exit_status):
+                print("Shutdown command {} failed".format(quit_command))
+                
+    
     # %% Move to test when done
     def make_next_button(self):
         """Initialize widget for button to continue to MRTPage"""
@@ -1242,9 +1272,19 @@ class MRTPage(tk.Frame):
     def close_button_pushed(self):
         # Destroy the application
         self.controller.destroy()
-
+#%% Main
 if(__name__ == "__main__"):
+    
+    # Set up argument parser
+    parser = argparse.ArgumentParser(
+        description = __doc__)
+    parser.add_argument('-qc','--quit-command', 
+                        default=None,
+                        type=str,
+                        help="Command to run when quit button pressed on start screen. Defaults to None, which exits the MRT GUI but does nothing else.")
+    args = parser.parse_args()
     # Create mrt instance
-    mrt = MRT()
+    mrt = MRT(**vars(args))
+
     # Initialize
     mrt.mainloop()
