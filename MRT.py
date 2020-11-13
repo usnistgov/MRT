@@ -20,6 +20,8 @@ import time
 from datetime import datetime
 import configparser
 import traceback
+import subprocess
+import argparse
 import pdb
 # Project Tags:
     # TODO: Feature to implement if time allows
@@ -31,8 +33,11 @@ class MRT(tk.Tk):
     mrt = MRT() creates a new instance of a tkinter GUI for performing modified rhyme
     tests. mrt.mainloop() runs the GUI.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, quit_command=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        
+        self.quit_command = quit_command
+        
         # Define title font
         self.title_font = tkfont.Font(family="Helvetica", size = 20, weight= "bold")
         # Define button font
@@ -62,14 +67,11 @@ class MRT(tk.Tk):
         # Initialize subject and session numbers as None
         self.subject_number = None
         self.session_number = None
+        
         # Query default output audio device
         _,self.audio_device = sd.default.device
-        # Store audio device list
-#        self.device_list = sd.query_devices()
-        self.hostapi_list = sd.query_hostapis()
-        self.device_list,self.device_list_ix = self.get_output_audio_devices()
-        
-        self.all_d_out = sd.query_devices()
+        # Store audio device list        
+        self.hostapi_list,self.device_list,self.device_list_ix = self.get_audio_device_lists()
         
         #file name for config
         self.config_file_name='config.ini'
@@ -126,7 +128,11 @@ class MRT(tk.Tk):
         device_name = self.device_list[d_ix]["name"] + self.hostapi_list[self.device_list[d_ix]["hostapi"]]["name"]
         return(device_name)
         
-        
+    def get_audio_device_lists(self):
+        """Wrapper function to update hostapi and output audio devices at once"""
+        hostapi_list = sd.query_hostapis()
+        device_list,device_list_ix = self.get_output_audio_devices()
+        return((hostapi_list,device_list,device_list_ix))
         
 class StartPage(tk.Frame):
     """Initialization page for MRT GUI
@@ -147,7 +153,10 @@ class StartPage(tk.Frame):
     subject_y = valid_dir_y + 120 # 410
     session_y = subject_y+40 # 450
     audio_y = session_y + 40 # 490
+    rai_y = audio_y + 60
+    audio_check_y = rai_y + 50
     next_y = 700
+    quit_y = next_y + 60
     
     
     
@@ -189,6 +198,9 @@ class StartPage(tk.Frame):
         # Set device list
         self.device_list = self.controller.device_list
         
+        self.test_play_fs,self.test_play = scipy.io.wavfile.read("audio_check.wav")
+        self.make_audio_check()
+        
         # Initialize int variable to store subject number
         self.subject_number = tk.IntVar(self)
         # Initialize to None 
@@ -210,8 +222,17 @@ class StartPage(tk.Frame):
         self.make_session_select()
         self.make_audio_device_select()
         
+        # Make refresh audio interface button
+        self.make_refresh_button()
+        
+        # Make Practice Button
+        # TODO: Implement this method
+        # self.make_practice()
+        
         # Make button to continue to MRT
         self.make_next_button()
+        
+        self.make_quit_button()
         
         # Check test directory status
         self.check_test_dir_status()
@@ -570,27 +591,92 @@ class StartPage(tk.Frame):
         self.audio_text.place(x=50+self.controller.x_offset, y = self.audio_y)
         
         self.audio_select = tk.OptionMenu(self,self.audio_device, "")
-        self.audio_select.place(x=50+self.controller.x_offset,y=self.audio_y+20)
+        self.audio_select.place(x=50+self.controller.x_offset,y=self.audio_y+20)    
+        
+        self.update_audio_device_select()
+        
+    def update_audio_device_select(self):
         menu = self.audio_select["menu"]
+        
         for ix,device in enumerate(self.controller.device_list):
             menu.add_command(label = device["name"]+ " " + self.controller.hostapi_list[device["hostapi"]]["name"],
                              command = lambda value = ix: self.audio_device_ix.set(value))
     
-    
-    
     def update_audio_device(self, *args):
         """Update audio device based off menu selection"""
         # Update controller audio device
-#        print(f"self.audio_device_ix.get(): {self.audio_device_ix.get()}")
-#        print(f"self.controller.device_list_ix: {self.controller.device_list_ix}")
-#        print(f"self.controller.all_d_out: \n{self.controller.all_d_out}")
         self.controller.audio_device = self.controller.device_list_ix[self.audio_device_ix.get()]
-#        print(f"self.controller.audio_device: {self.controller.audio_device}")
-#        self.controller.audio_device = self.audio_device_ix.get()
+        
+        # Get current audio device name
         audio_device = self.controller.device_list[self.audio_device_ix.get()]
         self.audio_device.set(audio_device["name"] + " " + self.controller.hostapi_list[audio_device["hostapi"]]["name"])
+
         # Update sound device (first input is input, second is output)
         sd.default.device = None,self.controller.audio_device
+    # %% Refresh Audio Devices
+    
+    def make_refresh_button(self):
+        """Initialize widget for refreshing audio devices"""
+        self.refresh_ai = tk.Button(self)
+        self.refresh_ai["text"] = "Refresh"
+        self.refresh_ai["font"] = self.button_font_size
+        self.refresh_ai["command"] = self.refresh_audio_devices
+        self.refresh_ai.place(x=50+self.controller.x_offset,y=self.rai_y,width=300)
+    
+    def refresh_audio_devices(self):
+        """Refresh available audio devices"""
+        menu = self.audio_select["menu"]
+        # Remove old menu items
+        for ix,device in enumerate(self.controller.device_list):
+            menu.delete(device["name"]+ " " + self.controller.hostapi_list[device["hostapi"]]["name"])
+        
+        # Restart sounddevice
+        sd._terminate()
+        sd._initialize()
+        
+        # Requery audio devices
+        self.controller.hostapi_list,self.controller.device_list,self.controller.device_list_ix = self.controller.get_audio_device_lists()
+        # pdb.set_trace()
+        self.update_audio_device_select()
+        
+        # Update variable tracking selected audio device
+        self.audio_device.set(self.controller.get_audio_device_name())
+    
+    #%% Practice Button
+    def make_audio_check(self):
+        """Initialize button for testing current audio settings"""
+        self.audio_check = tk.Button(self)
+        self.audio_check["text"] = "Check Audio"
+        self.audio_check["font"] = self.button_font_size
+        self.audio_check["command"] = self.check_audio
+        self.audio_check.place(x=50+self.controller.x_offset,
+                               y=self.audio_check_y,
+                               width=300)
+    def check_audio(self):
+        """Play example audio that is normalized to a volume of -26 dB"""
+        sd.play(self.test_play,self.test_play_fs)
+    
+    #%% Quit Button
+    def make_quit_button(self):
+        self.quit = tk.Button(self)
+        self.quit["text"] = "Quit"
+        self.quit["font"] = self.button_font_size
+        self.quit["command"] = self.quit_MRT
+        self.quit.place(x=50+self.controller.x_offset,
+                        y=self.quit_y,
+                        width=300)
+    
+    def quit_MRT(self):
+        # Get shutdown command
+        quit_command = self.controller.quit_command
+        # Destroy the application
+        self.controller.destroy()
+        if quit_command is not None:
+            exit_status = subprocess.run(quit_command)
+            if(exit_status):
+                print("Shutdown command {} failed".format(quit_command))
+                
+    
     # %% Move to test when done
     def make_next_button(self):
         """Initialize widget for button to continue to MRTPage"""
@@ -1186,9 +1272,19 @@ class MRTPage(tk.Frame):
     def close_button_pushed(self):
         # Destroy the application
         self.controller.destroy()
-
+#%% Main
 if(__name__ == "__main__"):
+    
+    # Set up argument parser
+    parser = argparse.ArgumentParser(
+        description = __doc__)
+    parser.add_argument('-qc','--quit-command', 
+                        default=None,
+                        type=str,
+                        help="Command to run when quit button pressed on start screen. Defaults to None, which exits the MRT GUI but does nothing else.")
+    args = parser.parse_args()
     # Create mrt instance
-    mrt = MRT()
+    mrt = MRT(**vars(args))
+
     # Initialize
     mrt.mainloop()
