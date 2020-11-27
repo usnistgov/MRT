@@ -1,4 +1,4 @@
-##Xorg setting
+## Xorg setting
 
 This folder contains settings files for Xorg they go in `/etc/X11/xorg.conf.d`. The following files are included
 - **20-modesetting.conf** This file turns on software cursor to prevent weird graphical errors on some systems
