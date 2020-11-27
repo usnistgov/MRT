@@ -1,0 +1,11 @@
+# See /boot/overlays/README for all available options
+
+initramfs initramfs-linux.img followkernel
+device_tree_param=audio=on
+audio_pwm_mode=2
+dtoverlay=vc4-kms-v3d,cma-256
+gpu_mem=256
+dtparam=spi=on
+dtparam=i2c_arm=on
+dtparam=i2c1=on
+
