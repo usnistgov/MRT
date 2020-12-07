@@ -27,6 +27,7 @@ import pdb
     # TODO: Feature to implement if time allows
     # BUG: Known issue that requires further investigation
     # NOTE: Minor thing to track if issues crop up
+#%%--------------Main MRT Class-----------------
 class MRT(tk.Tk):
     """Modified Rhyme Test GUI
     
@@ -85,7 +86,7 @@ class MRT(tk.Tk):
         # Initialize empty frames dictionary
         self.frames = {}
         # Iterate through and initialize different frames
-        for F in (StartPage, DemoPage, MRTPage):
+        for F in (StartPage, DemoPage, EnvironmentPage, MRTPage):
             # Get page name
             page_name = F.__name__
             # Initialize frame
@@ -133,7 +134,7 @@ class MRT(tk.Tk):
         hostapi_list = sd.query_hostapis()
         device_list,device_list_ix = self.get_output_audio_devices()
         return((hostapi_list,device_list,device_list_ix))
-        
+#%% --------------StartPage------------------------
 class StartPage(tk.Frame):
     """Initialization page for MRT GUI
     
@@ -681,7 +682,7 @@ class StartPage(tk.Frame):
     def make_next_button(self):
         """Initialize widget for button to continue to MRTPage"""
         self.Next = tk.Button(self)
-        self.Next["text"] = "Start Session"
+        self.Next["text"] = "Next"
         self.Next["font"] = self.controller.title_font
         self.Next["command"] = self.start_MRT
         self.Next["state"] = "disable"
@@ -732,10 +733,10 @@ class StartPage(tk.Frame):
         if(self.session_number.get() == 1):
             self.controller.show_frame("DemoPage")    
         else:
-            self.controller.show_frame("MRTPage")
+            self.controller.show_frame("EnvironmentPage")
         
         
-# %% Demographics Page
+# %% ----------Demographics Page----------------------
 class DemoPage(tk.Frame):
     """Demographics questions page"""
     font_size = 15
@@ -835,14 +836,14 @@ class DemoPage(tk.Frame):
     def make_next_button(self):
         """Initialize widget for button to continue to MRTPage"""
         self.Next = tk.Button(self)
-        self.Next["text"] = "Start Session"
+        self.Next["text"] = "Next"
         self.Next["font"] = self.controller.title_font
         self.Next["command"] = self.start_MRT
         self.Next["state"] = "disable"
         self.Next.place(x=50+self.controller.x_offset,y=self.next_y,width=300)
         
     def start_MRT(self):
-        """Save demographics information and continue to MRT session"""
+        """Save demographics information and continue to Listener Environment Page"""
         subject_number = self.controller.subject_number
         
         results_dir = os.path.join(self.controller.test_dir.get(), 'Results')
@@ -859,8 +860,141 @@ class DemoPage(tk.Frame):
             csv_writer.writerow(header)
             row = [self.discipline.get(), self.age.get(), self.gender.get()]
             csv_writer.writerow(row)
+        self.controller.show_frame("EnvironmentPage")
+# %% ---------Listener Environment--------------------
+class EnvironmentPage(tk.Frame):
+    """Listener environment questions page"""
+    title_font_size = 18
+    title_font = "Helvetica"
+    
+    font_size = 15
+    font = "Helvetica"
+    offset = 120
+    instructions_y = 50
+    location_y = 330
+    noise_y = location_y + offset
+    visual_y = noise_y + offset
+    next_y = 700
+    def __init__(self,parent, controller):
+        tk.Frame.__init__(self,parent)
+        self.controller = controller
+        
+        
+        self.make_next_button()
+        self.make_instructions()
+        
+        self.make_location()
+        self.make_noise()
+        self.make_visual()
+        
+    def make_instructions(self):
+        """Initialize instruction/information message"""
+        self.instructions = tk.Message(self)
+        self.instructions['text'] = ("Please provide some information about "
+                         "your listening environment. "
+                         "Your selections will not be associated "
+                         "with your MRT responses in publications and will only "
+                         "be published as aggregate statistics.")
+        self.instructions["justify"] = "center"
+        self.instructions["font"] = (self.title_font,self.title_font_size,"bold")
+        self.instructions["width"] = 300
+        
+        self.instructions.place(x=50+self.controller.x_offset,y=self.instructions_y)
+    
+    def make_location(self):
+        """Initialize question about current location environment"""
+        
+        self.location_text = tk.Message(self)
+        self.location_text['text'] = "Which of the following best describes your location for this test?"
+        self.location_text["justify"] = "center"
+        self.location_text["width"] = 300
+        self.location_text["font"] = (self.font, self.font_size)
+        self.location_text.place(x=50+self.controller.x_offset, y = self.location_y)
+        
+        environments = ["Private room with closed door (e.g. office, bedroom)",
+                        "Private open area (e.g. living room, family room)",
+                        "Public open area (e.g. lobby, breakroom, library, cafe)"]
+        
+        self.location = tk.StringVar(self)
+        self.location.set(environments[0])
+        
+        self.location_select = tk.OptionMenu(self, self.location,*environments)
+        self.location_select.place(x = 50 + self.controller.x_offset,y=self.location_y+75)
+        
+        
+    def make_noise(self):
+        """Initialize question about current noise environment"""
+        self.noise_text = tk.Message(self)
+        self.noise_text['text'] = "Which of the following best describes the noise environment of the location?"
+        self.noise_text["justify"] = "center"
+        self.noise_text["width"] = 300
+        self.noise_text["font"] = (self.font, self.font_size)
+        self.noise_text.place(x=50+self.controller.x_offset, y = self.noise_y)
+        
+        
+        noises = ["No noises or minimal noises",
+                  "Moderate noises",
+                  "Significant noises"]
+        self.noise = tk.StringVar(self)
+        self.noise.set(noises[0])
+        
+        self.noise_select = tk.OptionMenu(self,self.noise,*noises)
+        self.noise_select.place(x= 100 + self.controller.x_offset, y= self.noise_y + 75)
+        
+    def make_visual(self):
+        """Initialize question about current visual environment"""
+        self.visual_text = tk.Message(self)
+        self.visual_text['text'] = "Which of the following best describes the visual environment of the location?"
+        self.visual_text["justify"] = "center"
+        self.visual_text["width"] = 300
+        self.visual_text["font"] = (self.font, self.font_size)
+        self.visual_text.place(x=50+self.controller.x_offset, y = self.visual_y)
+        
+        
+        visuals = ["No or few visual distractions",
+                  "Moderate visual distractions",
+                  "Significant visual distractions"]
+        self.visual = tk.StringVar(self)
+        self.visual.set(visuals[0])
+        
+        self.visual_select = tk.OptionMenu(self,self.visual,*visuals)
+        self.visual_select.place(x= 100 + self.controller.x_offset, y= self.visual_y + 75)
+        
+        
+    def make_next_button(self):
+        """Initialize widget for button to continue to MRTPage"""
+        self.Next = tk.Button(self)
+        self.Next["text"] = "Start Session"
+        self.Next["font"] = self.controller.title_font
+        self.Next["command"] = self.start_MRT
+        self.Next.place(x=50+self.controller.x_offset,y=self.next_y,width=300)
+        
+    def start_MRT(self):
+        """Save location information and continue to MRT session"""
+        subject_number = self.controller.subject_number
+        session_number = self.controller.session_number
+        
+        results_dir = os.path.join(self.controller.test_dir.get(), 'Results')
+        
+        # Record when test finishes
+        now = datetime.now()
+        now_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+        
+        fname = "Subject{}_Session{}_Environment_{}.csv".format(str(subject_number),
+                                                                str(session_number),
+                                                                now_str)
+        fpath = os.path.join(results_dir,fname)
+        header = [self.location_text['text'],
+                  self.noise_text['text'],
+                  self.visual_text['text']]
+        with open(fpath,"w",newline="") as demo_file:
+            csv_writer = csv.writer(demo_file,delimiter= ",")
+            csv_writer.writerow(header)
+            row = [self.location.get(), self.noise.get(), self.visual.get()]
+            csv_writer.writerow(row)
         self.controller.show_frame("MRTPage")
-# %% MRT Session
+        
+# %% ----------MRT Session----------------------------
 class MRTPage(tk.Frame):
     """Modified rhyme test page where MRT trials are performed"""
     font_style = "Helvetica"
@@ -1278,7 +1412,7 @@ if(__name__ == "__main__"):
     # Set up argument parser
     parser = argparse.ArgumentParser(
         description = __doc__)
-    parser.add_argument('-qc','--quit-command', 
+    parser.add_argument('-q','--quit-command', 
                         default=None,
                         type=str,
                         help="Command to run when quit button pressed on start screen. Defaults to None, which exits the MRT GUI but does nothing else.")
