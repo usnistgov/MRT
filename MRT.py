@@ -203,13 +203,13 @@ class StartPage(tk.Frame):
         self.make_audio_check()
         
         # Initialize int variable to store subject number
-        self.subject_number = tk.IntVar(self)
+        self.subject_number = tk.StringVar(self)
         # Initialize to None 
         self.subject_number.set(None)
         # Set trace function (called when int var value changes through set())
         self.subject_number.trace("w",self.update_subject_number)
         # Initialize session number int var
-        self.session_number = tk.IntVar(self)
+        self.session_number = tk.StringVar(self)
         self.session_number.set(None)
         # Set trace function
         self.session_number.trace("w", self.update_session_number)
@@ -490,48 +490,70 @@ class StartPage(tk.Frame):
         
         # List files from input location directory
         file_list = os.listdir(self.controller.inputLocation)
-        # Subject numbers is a set 
-        # show up multiple times as SubjectX_Session1, SubjectX_Session2...
-        subject_numbers= set()
-        # Session numbers is a dictionary with  subject number keys to a list 
-        # of session number values
-        session_numbers = {}
-        # NOTE: Have minor concerns about validating file name structures here...
-        for file in file_list:
-            # Split file name into string preceeding split char, split char, and string following split
-            subj,split,sesh = file.partition("_")
-            # Split preceeding string with "Subject"
-            subj_s = subj.split("Subject")
-            # Split following string with "Session"
-            sesh_s = sesh.split("Session")
+        
+        # Organize files by subject
+        subjects = dict()
+        for fname in file_list:
+            subj_search = re.search('Subject(\d+)',fname)
+            subject = subj_search.groups()[0]
             
-            if(len(subj_s) == 2):
-                # Means that Subject was in string
-                # Assume the remainder of string is convertible to int
-                subj_num = int(subj_s[1])
-            else:
-                # Subject was not in string, store subject number as None
-                subj_num = None
-            if(len(sesh_s) == 2):
-                # Means that Session was in string: Have something like ["Session","Y.csv"]
-                # Still need to split out Y from csv, Y must be int convertible
-                sesh_num = int(sesh_s[1].split(".csv")[0])
-            else:
-                sesh_num = None
-            if(subj_num is not None and sesh_num is not None):
-                # Both subj_num and sesh_num are not none:
-                # Add subj_num to set
-                subject_numbers.add(subj_num)
-                if(subj_num in session_numbers):
-                    # If subj_num already dictionary key in session_numbers, 
-                    # just append sesh_num
-                    session_numbers[subj_num].append(sesh_num)
+            sesh_search = re.search('Session(\d+)',fname)
+            sesh = sesh_search.groups()[0]
+            
+            if subject is not None and sesh is not None:
+                if(subject in subjects.keys()):    
+                    # If subject dictionary already started, just append session
+                    subjects[subject].append(sesh)
                 else:
-                    # Otherwise set key to new list with sesh_num
-                    session_numbers[subj_num] = [sesh_num]
-        # Update frame subject/session values
-        self.subject_numbers = subject_numbers
-        self.session_numbers = session_numbers
+                    # Otherwise start new list with session
+                    subjects[subject] = [sesh]
+        
+        self.subject_numbers = subjects.keys()
+        self.session_numbers = subjects
+        # pdb.set_trace()
+        # # Subject numbers is a set 
+        # # show up multiple times as SubjectX_Session1, SubjectX_Session2...
+        # subject_numbers= set()
+        # # Session numbers is a dictionary with  subject number keys to a list 
+        # # of session number values
+        # session_numbers = {}
+        # # NOTE: Have minor concerns about validating file name structures here...
+        # for file in file_list:
+        #     # Split file name into string preceeding split char, split char, and string following split
+        #     subj,split,sesh = file.partition("_")
+        #     # Split preceeding string with "Subject"
+        #     subj_s = subj.split("Subject")
+        #     # Split following string with "Session"
+        #     sesh_s = sesh.split("Session")
+            
+        #     if(len(subj_s) == 2):
+        #         # Means that Subject was in string
+        #         # Assume the remainder of string is convertible to int
+        #         subj_num = subj_s[1]
+        #     else:
+        #         # Subject was not in string, store subject number as None
+        #         subj_num = None
+        #     if(len(sesh_s) == 2):
+        #         # Means that Session was in string: Have something like ["Session","Y.csv"]
+        #         # Still need to split out Y from csv, Y must be int convertible
+        #         sesh_num = sesh_s[1].split(".csv")[0]
+        #     else:
+        #         sesh_num = None
+        #     if(subj_num is not None and sesh_num is not None):
+        #         # Both subj_num and sesh_num are not none:
+        #         # Add subj_num to set
+        #         subject_numbers.add(subj_num)
+        #         if(subj_num in session_numbers):
+        #             # If subj_num already dictionary key in session_numbers, 
+        #             # just append sesh_num
+        #             session_numbers[subj_num].append(sesh_num)
+        #         else:
+        #             # Otherwise set key to new list with sesh_num
+        #             session_numbers[subj_num] = [sesh_num]
+        # # Update frame subject/session values
+        # pdb.set_trace()
+        # self.subject_numbers = subject_numbers
+        # self.session_numbers = session_numbers
         
     def set_subject_numbers(self):
         """Update subject dropdown values with new subject numbers"""
@@ -703,16 +725,28 @@ class StartPage(tk.Frame):
                             'AudioDevice':self.audio_device.get()}
         
         # Check if last session for this subject
-        if(self.controller.session_number == max(self.session_numbers[self.controller.subject_number])):
+        # pdb.set_trace()
+        # Convert strings to ints for comparisons
+        sessions_as_ints = [int(x) for x in self.session_numbers[self.controller.subject_number]]
+        
+        subjects_as_ints = [int(x) for x in self.session_numbers.keys()]
+        
+        subject_int = int(self.controller.subject_number)
+        session_int = int(self.controller.session_number)
+        
+        if(session_int == max(sessions_as_ints)):
+        # if(self.controller.session_number == max(self.session_numbers[self.controller.subject_number])):
             # Check if last subject in general
-            if(self.controller.subject_number == max(self.session_numbers.keys())):
+            if(subject_int == max(subjects_as_ints)):
+            # if(self.controller.subject_number == max(self.session_numbers.keys())):
                 # Also last subject
                 # Set next subject to be lowest number subject
                 next_subj = min(self.session_numbers.keys())
             else:
                 # Not last subject,
                 # Set next subject
-                next_subj = self.controller.subject_number + 1
+                # next_subj = self.controller.subject_number + 1
+                next_subj = string_add(self.controller.subject_number, 1)
             # Set next session to be lowest number session for that subject
             next_sesh = min(self.session_numbers[next_subj])
         else:
@@ -720,17 +754,19 @@ class StartPage(tk.Frame):
             # Keep subject the same
             next_subj = self.controller.subject_number
             # Iterate session
-            next_sesh = self.controller.session_number + 1
+            next_sesh = string_add(self.controller.session_number,1)
+            
+            # next_sesh = self.controller.session_number + 1
                 
             
         config['Next'] = {'TestDir': self.default_test_dir,
-                          'SubjectNumbers':str(next_subj),
-                          'SessionNumbers':str(next_sesh),
+                          'SubjectNumbers':next_subj,
+                          'SessionNumbers':next_sesh,
                           'AudioDevice':self.audio_device.get()}
         with open(self.controller.config_file_name, 'w') as configfile:
             config.write(configfile)
         
-        if(self.session_number.get() == 1):
+        if(session_int == 1):
             self.controller.show_frame("DemoPage")    
         else:
             self.controller.show_frame("EnvironmentPage")
@@ -1406,6 +1442,17 @@ class MRTPage(tk.Frame):
     def close_button_pushed(self):
         # Destroy the application
         self.controller.destroy()
+
+def string_add(string,add):
+    """Add to an int stored as a string while preserving formatting"""
+    digits = len(string)
+    format_str = "{" + ":0{}d".format(digits) + "}"
+    as_int = int(string)
+    
+    added = as_int + add
+    out = format_str.format(added)
+    return(out)
+
 #%% Main
 if(__name__ == "__main__"):
     
