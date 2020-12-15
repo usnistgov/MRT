@@ -1,0 +1,69 @@
+# Maintainer: Jesse Frey <jesse.frey@nist.gov>
+pkgname=python-ptcommon-git # '-bzr', '-git', '-hg' or '-svn'
+pkgver=r38.ecd7ae5
+pkgrel=1
+pkgdesc="Python library for pitop"
+arch=(any)
+url="github.com/pi-top/Device-Management"
+license=('GPL')
+groups=()
+depends=('python' 'python-systemd')
+makedepends=('git') # 'bzr', 'git', 'mercurial' or 'subversion'
+provides=("${pkgname%-git}")
+conflicts=("${pkgname%-git}")
+replaces=()
+backup=()
+options=()
+install=
+source=('python-ptcommon::git+https://github.com/pi-top/Device-Management.git#branch=master')
+noextract=()
+md5sums=('SKIP')
+
+pkgver() {
+	cd "$srcdir/${pkgname%-git}"
+
+# The examples below are not absolute and need to be adapted to each repo. The
+# primary goal is to generate version numbers that will increase according to
+# pacman's version comparisons with later commits to the repo. The format
+# VERSION='VER_NUM.rREV_NUM.HASH', or a relevant subset in case VER_NUM or HASH
+# are not available, is recommended.
+
+# Git, no tags available
+	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+
+}
+
+prepare() {
+	cd "$srcdir/${pkgname%-git}/library"
+    #create empty __init__.py file
+    touch ptcommon/__init__.py
+}
+
+build() {
+	cd "$srcdir/${pkgname%-git}/library"
+    python -c "import setuptools ; setuptools.setup(packages=setuptools.find_packages(),name='ptcommon');" build
+}
+
+package() {
+	cd "$srcdir/${pkgname%-git}/library"
+    #run python setup
+    python -c "import setuptools; setuptools.setup(packages=setuptools.find_packages(),name='ptcommon');" install --root="$pkgdir" --optimize=1
+    #change to the poweroff directory
+	cd "$srcdir/${pkgname%-git}/poweroff"
+    #create directory for poweroff scripts
+    install -dm 755 ${pkgdir}/usr/lib/${pkgname%-git}
+    #install poweroff scripts
+    install  -m 755 poweroff-v2 ${pkgdir}/usr/lib/${pkgname%-git}
+    install  -m 755 poweroff-v1 ${pkgdir}/usr/lib/${pkgname%-git}
+    #create directory for systemd units
+    install -dm 755 ${pkgdir}/usr/lib/systemd/system/
+    #install systemd units
+    install  -m 644 pt-poweroff-v1.service ${pkgdir}/usr/lib/systemd/system/
+    install  -m 644 pt-poweroff-v2.service ${pkgdir}/usr/lib/systemd/system/
+    #fix name in unit files
+    sed -i s/pt-device-manager/${pkgname%-git}/ ${pkgdir}/usr/lib/systemd/system/pt-poweroff-v2.service
+    sed -i s/pt-device-manager/${pkgname%-git}/ ${pkgdir}/usr/lib/systemd/system/pt-poweroff-v1.service
+
+
+}
+
