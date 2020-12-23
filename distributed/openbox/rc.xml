@@ -193,13 +193,13 @@
   <keybind key="XF86AudioRaiseVolume">
       <action name="Execute">
 
-          <command>amixer --card 2 sset PCM 3%+</command>
+          <command>amixer sset PCM 3%+</command>
       </action>
   </keybind>
   <!-- volume down -->
   <keybind key="XF86AudioLowerVolume">
       <action name="Execute">
-          <command>amixer --card 2 sset PCM 3%-</command>
+          <command>amixer sset PCM 3%-</command>
       </action>
   </keybind>
 </keyboard>
