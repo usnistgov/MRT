@@ -198,8 +198,12 @@ class StartPage(tk.Frame):
         self.audio_device.set(self.controller.get_audio_device_name())
         # Set device list
         self.device_list = self.controller.device_list
+
+        file_dir=os.path.dirname(os.path.abspath(__file__))
+
+        check_path=os.path.join(file_dir,"audio_check.wav")
         
-        self.test_play_fs,self.test_play = scipy.io.wavfile.read("audio_check.wav")
+        self.test_play_fs,self.test_play = scipy.io.wavfile.read(check_path)
         self.make_audio_check()
         
         # Initialize int variable to store subject number
