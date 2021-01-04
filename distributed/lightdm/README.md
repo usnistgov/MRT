@@ -2,7 +2,7 @@
 
 lightdm is used to automatically log in to openbox on startup. A bit of setup is required to make lightdm work. 
 
-- **install accountsservice** this is listed as an optional dependancy for lightdm but, it won't work for us without it
+- **install accountsservice** this is listed as an optional dependancy for lightdm but, it won't work for us without it. To install run `pacman -Syu accountsservice` as root
 - **create user** the auto login user in the examples is named `mrt`. This user must belong to the autologin and nopasswdlogin groups which also must be created. Run the following as root:
 ```bash
 # groupadd -r nopasswdlogin
