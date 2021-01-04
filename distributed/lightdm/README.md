@@ -9,10 +9,13 @@ lightdm is used to automatically log in to openbox on startup. A bit of setup is
 # groupadd -r autologin
 # useradd -mG autologin,nopasswdlogin -s /bin/bash mrt
 ```
-- **update lightdm.conf** update `/etc/lightdm/lightdm.conf` with the following
+- **update lightdm.conf** update `/etc/lightdm/lightdm.conf` with the following:
 ```
 autologin-usr=mrt
 autologin-session=openbox
 autologin-user-timeout=0
 ```
-
+- **enable lightdm with systemd** this causes lightdm to be run on startup and, if configured, will automatically login as mrt user and run the MRT GUI. Run as root:
+```bash
+# systemctl enable lightdm
+```
