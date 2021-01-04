@@ -1,4 +1,4 @@
-##PKGbUILDS
+## PKGbUILDS
 
 PKGBUILD files are used by the arch linux makepkg command to build a package. They are provided here to install a few needed components that aren't in the standard repositories.
 
