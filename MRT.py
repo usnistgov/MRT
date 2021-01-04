@@ -1284,10 +1284,10 @@ class MRTPage(tk.Frame):
         # Read wav file
         fs,clip = scipy.io.wavfile.read(clip_path)
         # Play clip, record play time
-        self.play_time = self.play_clip(clip,fs)
+        # self.play_time = self.play_clip(clip,fs)
+        self.play_start = self.play_clip(clip,fs)
         
-        # Save time start for voting timing later
-        self.vote_start = time.time()
+        
     
     def check_path(self,fname):
         """Check that the session file has appropriate path separator"""
@@ -1314,15 +1314,24 @@ class MRTPage(tk.Frame):
         clip = np.pad(raw_clip,[0,np.int16(np.round(fs*pad))],mode="constant")
         # Play clip, with blocking to prevent action while clip is playing
         sd.play(clip,fs)
+        
+        # Calculate length of clip
+        clip_len = int(len(clip)/fs*1e3)
+        
         # Hold GUI until clip is done, re-enable buttons
         # Do not use blocking via sd as this prevents GUI from refreshing and causes clicks on disabled buttons to register as soon as they are enabled later
-        self.after(int(len(clip)/fs*1e3),lambda: self.set_word_state("normal"))
-        # Record when clip finishes
-        play_end = time.time()
+        # After clip length seconds, go into function to re-enable buttons, and record timing
+        self.after(clip_len,self.finished_playing)
         
-        # Play time for the audio clip
-        play_time = play_end - play_start
-        return(play_time)
+        return(play_start)
+    
+    def finished_playing(self):
+        """Handle that the clip is done playing"""
+        # Enable buttons
+        self.set_word_state("normal")
+        # Record when clip finishes
+        self.play_end = time.time()
+        
         
     def word_button_pushed(self,ix):
         """Record vote and end trial"""
@@ -1340,11 +1349,16 @@ class MRTPage(tk.Frame):
         """Finish MRT trial"""
         # Store results
         self.ssPL[self.trial_number]["Vote"] = vote+1
+        
+        # Calculate play time
+        play_time = self.play_end - self.play_start
+        
         # Calculate vote time
-        vote_time = vote_end - self.vote_start
+        vote_time = vote_end - self.play_end
         # Store play and vote times
-        self.ssPL[self.trial_number]["PlayTime"] = self.play_time
+        self.ssPL[self.trial_number]["PlayTime"] = play_time
         self.ssPL[self.trial_number]["VoteTime"] = vote_time
+        print("Play time: {}, vote time: {}".format(play_time,vote_time))
         self.ssPL[self.trial_number]["AudioDevice"] = self.controller.get_audio_device_name()
         # Increment trial number
         self.trial_number += 1
