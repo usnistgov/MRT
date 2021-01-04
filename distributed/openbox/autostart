@@ -18,5 +18,5 @@
 #
 
 #run MRt test
-#/home/alarm/MRT/MRT.py &
+~/MRT/MRT.py &
 
