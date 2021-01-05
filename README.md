@@ -2,6 +2,30 @@
 
 The purpose of this software is to offer a graphical user interface (GUI) for performing modified rhyme test (MRT) intelligibility research. MRT intelligibility is a subjective measure of how intelligible a given keyword is. Subjects are played audio and asked to select the keyword they think they have heard from a list of 6 keywords. The keywords are all structured as consonant-vowel-consonant. Each list contains keywords that rhyme in a certain sense: either the leading or trailing consonant varies between words in a batch.
 
+# Building and Installing the Package Locally
+
+To build the package
+```#remove old packages and stuff
+ rm -r dist
+ rm -r build
+
+ #pull the latest version
+ git pull
+
+ # run setup script
+ py setup.py sdist bdist_wheel
+ ```
+
+ To install the package
+
+ ```
+ #remove the old package
+ python -m pip uninstall mrt-nist
+
+ # install the new package
+ python -m pip install --find-links ./dist/ mrt-nist
+ ```
+
 # RUNNING MRT SOFTWARE
 
 To run the test software run MRT.py. You must have a compatible test directory containing test audio and session playlists. More information on these requirements to come in the future...
