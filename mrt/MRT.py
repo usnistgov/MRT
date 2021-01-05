@@ -29,7 +29,7 @@ import pdb
     # TODO: Feature to implement if time allows
     # BUG: Known issue that requires further investigation
     # NOTE: Minor thing to track if issues crop up
-#%%--------------Main MRT Class-----------------
+##%%--------------Main MRT Class-----------------
 class MRT(tk.Tk):
     """Modified Rhyme Test GUI
     
@@ -326,7 +326,7 @@ class StartPage(tk.Frame):
 #            if(full_name == dev_name):
 #                print(f"found it! It's {full_name}")
 #        print("hmmm")
-    # %% Welcome Message
+    # #%% Welcome Message
     def make_welcome_message(self):
         """Make the welcome message for the MRT StartPage"""
         self.Welcome = tk.Message(self)
@@ -340,7 +340,7 @@ class StartPage(tk.Frame):
         self.Welcome.place(x=50+self.controller.x_offset,y=self.welcome_y)
         self.update()
         
-    # %% Source Directory Identification
+    # #%% Source Directory Identification
     def make_test_dir(self):
         """Make test directory widgets for the MRT StartPage
         
@@ -487,7 +487,7 @@ class StartPage(tk.Frame):
         # Disable session selection
         self.session_select["state"] = "disable"
         
-    # %% Subject Drop Down Menus
+    # #%% Subject Drop Down Menus
     def make_subject_select(self):
         """Initialize widgets for selection subject number"""
         self.subject_text = tk.Message(self)
@@ -591,7 +591,7 @@ class StartPage(tk.Frame):
         except:
             self.controller.subject_number = None
         
-    # %% Session Drop Down Menus
+    # #%% Session Drop Down Menus
     def make_session_select(self):
         """Initialize widgets for session dropdown selection"""
         self.session_text = tk.Message(self)
@@ -622,7 +622,7 @@ class StartPage(tk.Frame):
             self.Next["state"] = "normal"
         except:
             self.controller.session_number = None
-    # %% Audio Device Drop down
+    # #%% Audio Device Drop down
     def make_audio_device_select(self):
         """Initialize widgets for audio device selection"""
         self.audio_text = tk.Message(self)
@@ -653,7 +653,7 @@ class StartPage(tk.Frame):
 
         # Update sound device (first input is input, second is output)
         sd.default.device = None,self.controller.audio_device
-    # %% Refresh Audio Devices
+    # #%% Refresh Audio Devices
     
     def make_refresh_button(self):
         """Initialize widget for refreshing audio devices"""
@@ -682,7 +682,7 @@ class StartPage(tk.Frame):
         # Update variable tracking selected audio device
         self.audio_device.set(self.controller.get_audio_device_name())
     
-    #%% Practice Button
+    ##%% Practice Button
     def make_audio_check(self):
         """Initialize button for testing current audio settings"""
         self.audio_check = tk.Button(self)
@@ -696,7 +696,7 @@ class StartPage(tk.Frame):
         """Play example audio that is normalized to a volume of -26 dB"""
         sd.play(self.test_play,self.test_play_fs)
     
-    #%% Quit Button
+    ##%% Quit Button
     def make_quit_button(self):
         self.quit = tk.Button(self)
         self.quit["text"] = "Quit"
@@ -717,7 +717,7 @@ class StartPage(tk.Frame):
                 print("Shutdown command {} failed".format(quit_command))
                 
     
-    # %% Move to test when done
+    # #%% Move to test when done
     def make_next_button(self):
         """Initialize widget for button to continue to MRTPage"""
         self.Next = tk.Button(self)
@@ -789,7 +789,7 @@ class StartPage(tk.Frame):
             self.controller.show_frame("EnvironmentPage")
         
         
-# %% ----------Demographics Page----------------------
+# #%% ----------Demographics Page----------------------
 class DemoPage(tk.Frame):
     """Demographics questions page"""
     font_size = 15
@@ -914,7 +914,7 @@ class DemoPage(tk.Frame):
             row = [self.discipline.get(), self.age.get(), self.gender.get()]
             csv_writer.writerow(row)
         self.controller.show_frame("EnvironmentPage")
-# %% ---------Listener Environment--------------------
+# #%% ---------Listener Environment--------------------
 class EnvironmentPage(tk.Frame):
     """Listener environment questions page"""
     title_font_size = 18
@@ -1047,7 +1047,7 @@ class EnvironmentPage(tk.Frame):
             csv_writer.writerow(row)
         self.controller.show_frame("MRTPage")
         
-# %% ----------MRT Session----------------------------
+# #%% ----------MRT Session----------------------------
 class MRTPage(tk.Frame):
     """Modified rhyme test page where MRT trials are performed"""
     font_style = "Helvetica"
@@ -1484,7 +1484,7 @@ def string_add(string,add):
     out = format_str.format(added)
     return(out)
 
-#%% Main
+##%% Main
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
@@ -1501,5 +1501,4 @@ def main():
     mrt.mainloop()
 
 if(__name__ == "__main__"):
-    
     main()
