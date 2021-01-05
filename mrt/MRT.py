@@ -9,6 +9,8 @@ Created on Thu Dec  5 08:57:31 2019
 from tkinter import filedialog
 from tkinter import font as tkfont
 from tkinter import messagebox
+import pkgutil
+import io
 import tkinter as tk
 import os
 import csv
@@ -199,7 +201,10 @@ class StartPage(tk.Frame):
         # Set device list
         self.device_list = self.controller.device_list
         
-        self.test_play_fs,self.test_play = scipy.io.wavfile.read("audio_check.wav")
+        
+        stream = io.BytesIO(pkgutil.get_data(__name__, "audio_check.wav"))
+        self.test_play_fs,self.test_play = scipy.io.wavfile.read(stream)
+        
         self.make_audio_check()
         
         # Initialize int variable to store subject number
@@ -1358,7 +1363,7 @@ class MRTPage(tk.Frame):
         # Store play and vote times
         self.ssPL[self.trial_number]["PlayTime"] = play_time
         self.ssPL[self.trial_number]["VoteTime"] = vote_time
-        print("Play time: {}, vote time: {}".format(play_time,vote_time))
+        
         self.ssPL[self.trial_number]["AudioDevice"] = self.controller.get_audio_device_name()
         # Increment trial number
         self.trial_number += 1
