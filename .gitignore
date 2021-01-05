@@ -1,2 +1,14 @@
 #ignore configuration file
 config.ini
+
+#ignore version file
+mrt/version.py
+
+#ignore python packaging things
+mrt_nist.egg-info/
+mrt/__pycache__/
+mrt_nist.egg-info/
+build/
+dist/
+.eggs/
+

@@ -1,0 +1,6 @@
+#remove the old package
+python -m pip uninstall mrt-nist
+
+# install the new package
+python -m pip install --find-links ./dist/ mrt-nist
+
