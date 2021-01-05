@@ -1,0 +1,9 @@
+rm -r dist
+rm -r build
+
+#pull the latest version
+git pull
+
+# run setup script
+py setup.py sdist bdist_wheel
+
