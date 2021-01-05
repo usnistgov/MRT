@@ -1473,8 +1473,7 @@ def string_add(string,add):
     return(out)
 
 #%% Main
-if(__name__ == "__main__"):
-    
+def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
         description = __doc__)
@@ -1488,3 +1487,7 @@ if(__name__ == "__main__"):
 
     # Initialize
     mrt.mainloop()
+
+if(__name__ == "__main__"):
+    
+    main()

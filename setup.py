@@ -28,5 +28,10 @@ setuptools.setup(
         'scipy',
         'sounddevice',
     ],
+    entry_points={
+        'console_scripts':[
+            'mrt-gui=mrt.MRT:main',
+        ],
+    },
     python_requires='>=3.6',
 )
