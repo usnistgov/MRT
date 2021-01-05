@@ -5,7 +5,7 @@ Created on Thu Dec  5 08:57:31 2019
 
 @author: jkp4
 """
-
+from .version import version
 from tkinter import filedialog
 from tkinter import font as tkfont
 from tkinter import messagebox
@@ -45,7 +45,7 @@ class MRT(tk.Tk):
         self.title_font = tkfont.Font(family="Helvetica", size = 20, weight= "bold")
         # Define button font
         self.button_font = tkfont.Font(family="Helvetica", size = 15)
-        
+        self.version_font = tkfont.Font(family="Helvetica",size=8)
         self.title("Modified Rhyme Test") # Set app title
 #        self.geometry("400x800") # Set frame size
         self.attributes('-fullscreen',True)
@@ -136,7 +136,17 @@ class MRT(tk.Tk):
         hostapi_list = sd.query_hostapis()
         device_list,device_list_ix = self.get_output_audio_devices()
         return((hostapi_list,device_list,device_list_ix))
-#%% --------------StartPage------------------------
+    
+    
+    def make_version_text(self,version_y):
+        """Display version text"""
+        self.version = tk.Message(self)
+        self.version['text'] = 'v{}'.format(version)
+        self.version["justify"] = "center"
+        self.version["font"] = self.version_font
+        self.version["width"]= 300
+        self.version.place(x=50+self.x_offset,y=version_y)
+##%% --------------StartPage------------------------
 class StartPage(tk.Frame):
     """Initialization page for MRT GUI
     
@@ -160,7 +170,7 @@ class StartPage(tk.Frame):
     audio_check_y = rai_y + 50
     next_y = 700
     quit_y = next_y + 60
-    
+    version_y = quit_y + 50
     
     
     def __init__(self, parent, controller):
@@ -239,6 +249,8 @@ class StartPage(tk.Frame):
         self.make_next_button()
         
         self.make_quit_button()
+        
+        self.controller.make_version_text(self.version_y)
         
         # Check test directory status
         self.check_test_dir_status()
