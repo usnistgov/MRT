@@ -1,6 +1,3 @@
-#prevent wine from adding menuitems and desktop shortkuts
-WINEDLLOVERRIDES=winemenubuilder.exe=d
-
 # Check for an interactive session
 [ -z "$PS1" ] && return
 

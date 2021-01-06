@@ -211,10 +211,11 @@ class StartPage(tk.Frame):
         # Set device list
         self.device_list = self.controller.device_list
         
-        
+        # Grab audio check wave file from package directory
         stream = io.BytesIO(pkgutil.get_data(__name__, "audio_check.wav"))
+        # Load in wav file
         self.test_play_fs,self.test_play = scipy.io.wavfile.read(stream)
-        
+
         self.make_audio_check()
         
         # Initialize int variable to store subject number
