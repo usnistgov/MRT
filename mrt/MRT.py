@@ -38,10 +38,12 @@ class MRT(tk.Tk):
     mrt = MRT() creates a new instance of a tkinter GUI for performing modified rhyme
     tests. mrt.mainloop() runs the GUI.
     """
-    def __init__(self, quit_command=None, app_dir = None, *args, **kwargs):
+    def __init__(self, quit_command=None, quit_text = 'Quit', app_dir = None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         
+        # Save both quit command and text
         self.quit_command = quit_command
+        self.quit_text = quit_text
         
         # Define title font
         self.title_font = tkfont.Font(family="Helvetica", size = 20, weight= "bold")
@@ -745,7 +747,7 @@ class StartPage(tk.Frame):
     ##%% Quit Button
     def make_quit_button(self):
         self.quit = tk.Button(self)
-        self.quit["text"] = "Quit"
+        self.quit["text"] = self.controller.quit_text
         self.quit["font"] = self.button_font_size
         self.quit["command"] = self.quit_MRT
         self.quit.place(x=50+self.controller.x_offset,
@@ -1573,7 +1575,12 @@ def main():
     parser.add_argument('-a', '--app-dir',
                         default = None,
                         type=str,
-                        help = "override path for config and log files")
+                        help = "Override path for config and log files")
+    
+    parser.add_argument('-t', '--quit-text',
+                        default='Quit',
+                        type=str,
+                        help="Text displayed on quit button")
     
     args = parser.parse_args()
     # Create mrt instance
