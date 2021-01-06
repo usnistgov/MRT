@@ -27,6 +27,7 @@ setuptools.setup(
         'numpy',
         'scipy',
         'sounddevice',
+        'appdirs',
     ],
     entry_points={
         'console_scripts':[

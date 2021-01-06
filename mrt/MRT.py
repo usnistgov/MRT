@@ -10,6 +10,8 @@ from tkinter import filedialog
 from tkinter import font as tkfont
 from tkinter import messagebox
 import pkgutil
+import logging
+import appdirs
 import io
 import tkinter as tk
 import os
@@ -36,7 +38,7 @@ class MRT(tk.Tk):
     mrt = MRT() creates a new instance of a tkinter GUI for performing modified rhyme
     tests. mrt.mainloop() runs the GUI.
     """
-    def __init__(self, quit_command=None, *args, **kwargs):
+    def __init__(self, quit_command=None, app_dir = None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         
         self.quit_command = quit_command
@@ -76,8 +78,23 @@ class MRT(tk.Tk):
         # Store audio device list        
         self.hostapi_list,self.device_list,self.device_list_ix = self.get_audio_device_lists()
         
-        #file name for config
-        self.config_file_name='config.ini'
+        # Define paths to config and log files
+        if(app_dir is None):
+            appname = 'mrt-gui'
+            appauthor = 'MCV'
+            
+            # Make application directories if they do not exist
+            os.makedirs(appdirs.user_data_dir(appname,appauthor),exist_ok=True)
+            os.makedirs(appdirs.user_log_dir(appname,appauthor),exist_ok=True)
+            
+            # Not passed, use appdir
+            self.config_file_name = os.path.join(appdirs.user_data_dir(appname,appauthor),'config.ini')
+            self.log_file_name = os.path.join(appdirs.user_log_dir(appname,appauthor),'mrt.log')
+        else:
+            # was passed, find files there
+            self.config_file_name = os.path.join(app_dir,'config.ini')
+            self.log_file_name = os.path.join(app_dir,'mrt.log')
+        
         
         # Initialize container frame. Stack different frames here
         container = tk.Frame(self)
@@ -1507,6 +1524,12 @@ def main():
                         default=None,
                         type=str,
                         help="Command to run when quit button pressed on start screen. Defaults to None, which exits the MRT GUI but does nothing else.")
+    
+    parser.add_argument('-a', '--app-dir',
+                        default = None,
+                        type=str,
+                        help = "override path for config and log files")
+    
     args = parser.parse_args()
     # Create mrt instance
     mrt = MRT(**vars(args))
