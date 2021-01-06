@@ -250,6 +250,11 @@ class StartPage(tk.Frame):
         
         self.make_quit_button()
         
+        #BUG: This actually does what we want...but it can't be the right way 
+        #to do it. Currently, forces version to be in bottom across all 
+        #frames, which is what we want but defining that from a single page 
+        #seems bad...
+        #TODO: Make this more intentional 
         self.controller.make_version_text(self.version_y)
         
         # Check test directory status
