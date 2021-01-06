@@ -788,6 +788,8 @@ class StartPage(tk.Frame):
         with open(self.controller.config_file_name, 'w') as configfile:
             config.write(configfile)
         
+        #TODO: Add log information
+        
         if(session_int == 1):
             self.controller.show_frame("DemoPage")    
         else:
@@ -918,6 +920,8 @@ class DemoPage(tk.Frame):
             csv_writer.writerow(header)
             row = [self.discipline.get(), self.age.get(), self.gender.get()]
             csv_writer.writerow(row)
+        
+        #TODO: Add log information
         self.controller.show_frame("EnvironmentPage")
 # #%% ---------Listener Environment--------------------
 class EnvironmentPage(tk.Frame):
@@ -1050,6 +1054,8 @@ class EnvironmentPage(tk.Frame):
             csv_writer.writerow(header)
             row = [self.location.get(), self.noise.get(), self.visual.get()]
             csv_writer.writerow(row)
+        
+        #TODO: Add log information
         self.controller.show_frame("MRTPage")
         
 # #%% ----------MRT Session----------------------------
@@ -1476,6 +1482,8 @@ class MRTPage(tk.Frame):
         self.CloseButton["state"] = "normal"
         
     def close_button_pushed(self):
+        #TODO: Add log information
+        
         # Destroy the application
         self.controller.destroy()
 
