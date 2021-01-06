@@ -95,6 +95,7 @@ class MRT(tk.Tk):
             self.config_file_name = os.path.join(app_dir,'config.ini')
             self.log_file_name = os.path.join(app_dir,'mrt.log')
         
+        self.initialize_log()
         
         # Initialize container frame. Stack different frames here
         container = tk.Frame(self)
@@ -116,6 +117,7 @@ class MRT(tk.Tk):
             frame.grid(row=0,column=0,sticky="nsew")
         # Show StartPage
         self.show_frame("StartPage")
+    
     def show_frame(self,page_name):
         """Swap between tkinter frames for MRT app"""
         frame = self.frames[page_name]
@@ -163,6 +165,27 @@ class MRT(tk.Tk):
         self.version["font"] = self.version_font
         self.version["width"]= 300
         self.version.place(x=50+self.x_offset,y=version_y)
+        
+    def initialize_log(self, level = logging.INFO):
+        handler = logging.FileHandler(self.log_file_name)
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        handler.setFormatter(formatter)
+        logger = logging.getLogger('mrt-gui')
+        logger.setLevel(level)
+        logger.addHandler(handler)
+        
+    def write_log(self, destroy_handler = False, **kwargs):
+        logger = logging.getLogger('mrt-gui')
+        msg='\n'
+        
+        for key,value in kwargs.items():
+            msg += "{} = {}\n".format(key,value)
+        
+        logger.info(msg)
+        if(destroy_handler is True):
+            logger.handlers.clear()
+        
+        
 ##%% --------------StartPage------------------------
 class StartPage(tk.Frame):
     """Initialization page for MRT GUI
@@ -806,8 +829,12 @@ class StartPage(tk.Frame):
         with open(self.controller.config_file_name, 'w') as configfile:
             config.write(configfile)
         
-        #TODO: Add log information
-        
+        #Add log information
+        self.controller.write_log(test_status='Left Start Page',
+                                  subject=self.controller.subject_number,
+                                  session=self.controller.session_number,
+                                  audio_device=self.controller.get_audio_device_name(),
+                                  version=version)
         if(session_int == 1):
             self.controller.show_frame("DemoPage")    
         else:
@@ -939,7 +966,13 @@ class DemoPage(tk.Frame):
             row = [self.discipline.get(), self.age.get(), self.gender.get()]
             csv_writer.writerow(row)
         
-        #TODO: Add log information
+        #Add log information
+        self.controller.write_log(test_status='Left Demographics Page',
+                                  subject=self.controller.subject_number,
+                                  session=self.controller.session_number,
+                                  audio_device=self.controller.get_audio_device_name(),
+                                  version=version)
+        
         self.controller.show_frame("EnvironmentPage")
 # #%% ---------Listener Environment--------------------
 class EnvironmentPage(tk.Frame):
@@ -1073,7 +1106,12 @@ class EnvironmentPage(tk.Frame):
             row = [self.location.get(), self.noise.get(), self.visual.get()]
             csv_writer.writerow(row)
         
-        #TODO: Add log information
+        #Add log information
+        self.controller.write_log(test_status='Left Environment Page',
+                                  subject=self.controller.subject_number,
+                                  session=self.controller.session_number,
+                                  audio_device=self.controller.get_audio_device_name(),
+                                  version=version)
         self.controller.show_frame("MRTPage")
         
 # #%% ----------MRT Session----------------------------
@@ -1365,8 +1403,11 @@ class MRTPage(tk.Frame):
         clip_len = int(len(clip)/fs*1e3)
         
         # Hold GUI until clip is done, re-enable buttons
-        # Do not use blocking via sd as this prevents GUI from refreshing and causes clicks on disabled buttons to register as soon as they are enabled later
-        # After clip length seconds, go into function to re-enable buttons, and record timing
+        # Do not use blocking via sd as this prevents GUI from refreshing and 
+        #causes clicks on disabled buttons to register as soon as they are 
+        #enabled later
+        # After clip length seconds, go into function to re-enable buttons, 
+        #and record timing
         self.after(clip_len,self.finished_playing)
         
         return(play_start)
@@ -1500,8 +1541,12 @@ class MRTPage(tk.Frame):
         self.CloseButton["state"] = "normal"
         
     def close_button_pushed(self):
-        #TODO: Add log information
-        
+        #Add log information
+        self.controller.write_log(test_status='Successfully exited test',
+                                  subject=self.controller.subject_number,
+                                  session=self.controller.session_number,
+                                  audio_device=self.controller.get_audio_device_name(),
+                                  version=version)
         # Destroy the application
         self.controller.destroy()
 
