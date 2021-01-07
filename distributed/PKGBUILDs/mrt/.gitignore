@@ -1,0 +1,13 @@
+
+#ignore source
+src/
+
+#ignore package
+pkg/
+
+#ignore package files
+*.xz
+
+#ignore download directory
+mrt/
+

@@ -1,0 +1,59 @@
+# Maintainer: Jesse Frey <jesse.frey@nist.gov>
+pkgname=mrt-git
+pkgver=v0.0.2.r0.cbf16d9
+pkgrel=1
+pkgdesc="Python library for pitop"
+arch=(any)
+url=http://www.github.com/usnistgov/MRT
+license=('custom:NIST')
+groups=()
+depends=('python' 'python-numpy' 'python-scipy' 'python-sounddevice' 'python-appdirs')
+makedepends=('git' 'python-setuptools' 'python-pip')
+provides=("${pkgname%-git}")
+conflicts=("${pkgname%-git}")
+replaces=()
+backup=()
+options=()
+install=
+#download from github
+#source=('mrt::git+https://github.com/usnistgov/MRT#branch=master')
+#use this repo
+mrt_path=$(realpath ../../../)
+git_rev=$(git rev-parse HEAD)
+source=("mrt::git+file:///${mrt_path}#commit=${git_rev}")
+noextract=()
+md5sums=('SKIP')
+
+pkgver() {
+	cd "$srcdir/${pkgname%-git}"
+
+# The examples below are not absolute and need to be adapted to each repo. The
+# primary goal is to generate version numbers that will increase according to
+# pacman's version comparisons with later commits to the repo. The format
+# VERSION='VER_NUM.rREV_NUM.HASH', or a relevant subset in case VER_NUM or HASH
+# are not available, is recommended.
+
+# Git, tags available
+	printf "%s" "$(git describe --long | sed 's/\([^-]*-\)g/r\1/;s/-/./g')"
+
+}
+
+prepare() {
+	cd "$srcdir/${pkgname%-git}"
+}
+
+build() {
+	cd "$srcdir/${pkgname%-git}"
+    python setup.py build
+}
+
+package() {
+	cd "$srcdir/${pkgname%-git}"
+    #run python setup
+    python setup.py install --root="$pkgdir" --optimize=1
+    #install license
+    install -dm 755 ${pkgdir}/usr/share/licenses/$pkgname/
+    install -Dm644 LICENSE.md "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+}
+
