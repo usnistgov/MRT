@@ -20,7 +20,7 @@
 function MRT_loop {
     while true
     do
-        ~/MRT/MRT.py --quit-command poweroff
+        mrt-gui --quit-command poweroff --quit-text "Shutdown" --app-dir /media/data/
     done
 }
 
