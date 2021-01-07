@@ -26,6 +26,8 @@ To build the package
  python -m pip install --find-links ./dist/ mrt-nist
  ```
 
+ Alternatively, on Arch Linux, you can use the PKGBUILD in distributed/PKGBUILDs/mrt to build and install a package.
+
 # RUNNING MRT SOFTWARE
 
 To run the test software run MRT.py. You must have a compatible test directory containing test audio and session playlists. More information on these requirements to come in the future...
